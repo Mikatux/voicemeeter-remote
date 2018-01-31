@@ -1,0 +1,17 @@
+{
+  "name": "voicemeeter-remote",
+  "version": "0.0.1",
+  "description": "A Node.js voicemeeter remote wrapper",
+  "main": "index.js",
+  "author": "Mickael MAYEUR",
+  "license": "MIT",
+  "dependencies": {
+    "ffi": "^2.2.0",
+    "ref-array": "^1.2.0"
+  },
+  "keywords": [
+    "voicemeeter",
+    "remote",
+    ""
+  ]
+}
