@@ -16,6 +16,3 @@ jspm_packages/
 !.vscode/launch.json
 !.vscode/extensions.json
 .history
-
-### Add custom DLL ###
-!VoicemeeterRemote64.dll
