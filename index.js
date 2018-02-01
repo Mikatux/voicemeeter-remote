@@ -1,9 +1,25 @@
 const ref = require('ref');
 const ffi = require('ffi');
+const Registry = require('winreg');
 
 const ArrayType = require('ref-array');
 const CharArray = ArrayType('char');
 const LongArray = ArrayType('long');
+
+async function getDLLPath() {
+  const regKey = new Registry({
+    hive: Registry.HKLM,
+    key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VB:Voicemeeter {17359A74-1236-5467}'
+  });
+  return new Promise(resolve => {
+    regKey.values((err, items) => {
+      const unistallerPath = items.find(i => i.name === 'UninstallString').value;
+      const fileNameIndex = unistallerPath.lastIndexOf('\\')
+      resolve(unistallerPath.slice(0, fileNameIndex));
+    });
+  });
+}
+
 
 const {
   VoicemeeterDefaultConfig,
@@ -19,25 +35,30 @@ const isEmpty = function (object) {
   return true;
 }
 
-const libvoicemeeter = ffi.Library(__dirname + '/VoicemeeterRemote64.dll', {
-  'VBVMR_Login': ['long', []],
-  'VBVMR_Logout': ['long', []],
-  'VBVMR_Output_GetDeviceNumber': ['long', []],
-  'VBVMR_Output_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
-  'VBVMR_Input_GetDeviceNumber': ['long', []],
-  'VBVMR_Input_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
-  'VBVMR_SetParameters': ['long', [CharArray]],
-  'VBVMR_RunVoicemeeter': ['long', ['long']],
-  'VBVMR_GetVoicemeeterType': ['long', [LongArray]]
-});
-
+let libvoicemeeter;
 
 const voicemeeter = {
   isConnected: false,
+  isInitialised: false,
   outputDevices: [],
   inputDevices: [],
   voicemeeterType: 0,
   voicemeeterConfig: {},
+  async init(){
+
+    libvoicemeeter = ffi.Library(await getDLLPath() + '/VoicemeeterRemote64.dll', {
+      'VBVMR_Login': ['long', []],
+      'VBVMR_Logout': ['long', []],
+      'VBVMR_Output_GetDeviceNumber': ['long', []],
+      'VBVMR_Output_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
+      'VBVMR_Input_GetDeviceNumber': ['long', []],
+      'VBVMR_Input_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
+      'VBVMR_SetParameters': ['long', [CharArray]],
+      'VBVMR_RunVoicemeeter': ['long', ['long']],
+      'VBVMR_GetVoicemeeterType': ['long', [LongArray]]
+    });
+    this.isInitialised = true;
+  },
 
   runvoicemeeter(voicemeeterType) {
     if (libvoicemeeter.VBVMR_RunVoicemeeter(voicemeeterType) == 0) {
@@ -63,6 +84,9 @@ const voicemeeter = {
 
   },
   login() {
+    if(!this.isInitialised){
+      throw "await the initialisation before login";
+    }
     if (this.isConnected) {
       return;
     }
@@ -173,8 +197,10 @@ const voicemeeter = {
   },
 
 }
+
+//Create setter function
 const parameterStripNames = ['mono', 'solo', 'mute', 'gain', 'gate', 'comp'];
-const parameterBusNames = ['mono', 'mute' ];
+const parameterBusNames = ['mono', 'mute'];
 
 parameterBusNames.forEach(name => {
   const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -204,13 +230,21 @@ module.exports = voicemeeter;
 
 // For test only
 /*
+async function start(){
+  try{
+    await voicemeeter.init();
+    voicemeeter.login();
+    voicemeeter.updateDeviceList();
 
-voicemeeter.login();
-voicemeeter.updateDeviceList();
+    voicemeeter.inputDevices.forEach(d => {
+      console.log(d)
+    })
 
-voicemeeter.inputDevices.forEach(d => {
-  console.log(d)
-})
-
-voicemeeter.logout();
+    voicemeeter.logout();
+  }
+  catch(e){
+    console.log(e)
+  }
+}
+start();
 // */

@@ -7,7 +7,8 @@
   "license": "MIT",
   "dependencies": {
     "ffi": "^2.2.0",
-    "ref-array": "^1.2.0"
+    "ref-array": "^1.2.0",
+    "winreg": "^1.2.4"
   },
   "keywords": [
     "voicemeeter",
