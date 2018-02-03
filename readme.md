@@ -60,8 +60,11 @@ Want to contribute? Great!
 Fork the project make your change then do a pull request.
 
 #### Dependencies
+
 [`ffi`][ffi] => Read and execute the VoicemeeterRemote DLL
+
 [`ref-array`][ref-array] => Create array (*pointer) for `ffi` to return string from the DLL
+
 [`winreg`][winreg] => Read the windows registery to find Voicemeeter installation folder and the DLL
 
 # Usage
