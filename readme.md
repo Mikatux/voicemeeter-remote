@@ -19,14 +19,14 @@ voicemeeter.init().then(()=>{
 })
 ```
 
-After the login methods is successful you can use all the methods to interact with the instance of Voicemeeter
+After the login method is successful you can use all the methods to interact with the instance of Voicemeeter
 
 ### You can :
    - Connect and disconnect with the Voicemeeter software
 ```js
 // Connect
 voicemeeter.login();
-// Diconnect
+// Disconnect
 voicemeeter.logout();
 ```
 
@@ -40,7 +40,7 @@ voicemeeter.setBusMute(1,true);
    - Get all input/output devices
 ```js
 // Get all devices from the DLL
-// They will store into an array in the voicemeeter-remote instance
+// They will be stored into an array in the voicemeeter-remote instance
 voicemeeter.updateDeviceList();
 // Get input devices
 console.log(voicemeeter.inputDevices)
@@ -49,8 +49,9 @@ console.log(voicemeeter.outputDevices)
 ```
 
 # Todos
-- Parametters Getters
+- Parameters Getters
 - Stream Getters
+- 32bit compatibility
 - Implement all methods available in the DLL
 
 # Development
