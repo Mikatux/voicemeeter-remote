@@ -100,6 +100,9 @@ const voicemeeter = {
       case 2: // Voicemeeter Banana software
         return VoicemeeterType.voicemeeterBanana
         break;
+      case 3: // Voicemeeter Potato software
+        return VoicemeeterType.voicemeeterPotato
+        break;
       default: // unknow software
         return VoicemeeterType.unknow
     }
