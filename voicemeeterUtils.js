@@ -33,13 +33,10 @@ const VoicemeeterDefaultConfig = { // key is VoicemeeterType
       name: "Hardware input 3"
     }, {
       id: '3',
-      name: "Hardware input 4"
-    }, {
-      id: '4',
       name: "Voicemeeter VAIO",
       isVirtual: true
     }, {
-      id: '5',
+      id: '4',
       name: "Voicemeeter AUX",
       isVirtual: true
     }],
@@ -51,11 +48,9 @@ const VoicemeeterDefaultConfig = { // key is VoicemeeterType
       id: '2',
     }, {
       id: '3',
-    }, {
-      id: '4',
       isVirtual: true
     }, {
-      id: '5',
+      id: '4',
       isVirtual: true
     }],
   }
