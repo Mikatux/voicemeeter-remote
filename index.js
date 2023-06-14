@@ -22,13 +22,6 @@ const getDLLPath = () => {
 	});
 }
 
-const isEmpty = function (object) {
-	for (let key in object)
-		if (object.hasOwnProperty(key))
-			return false;
-	return true;
-}
-
 let libvoicemeeter;
 
 const voicemeeter = {
@@ -39,7 +32,7 @@ const voicemeeter = {
 	inputDevices: [],
 	type: 0,
 	version: null,
-	voicemeeterConfig: {},
+	voicemeeterConfig: null,
 
 	async init() {
 
@@ -194,7 +187,7 @@ const voicemeeter = {
 		if (!this.isConnected)
 			throw "Not connected";
 
-		if (!this.voicemeeterConfig || isEmpty(this.voicemeeterConfig))
+		if (!this.voicemeeterConfig)
 			throw "Configuration error";
 
 		const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
@@ -211,7 +204,7 @@ const voicemeeter = {
 		if (!this.isConnected)
 			throw "Not connected";
 
-		if (!this.voicemeeterConfig || isEmpty(this.voicemeeterConfig))
+		if (!this.voicemeeterConfig)
 			throw "Configuration error";
 
 		if (!Array.isArray(parameters))
@@ -241,10 +234,10 @@ const voicemeeter = {
 }
 
 // Create setter function
-const parameterStripNames = ["mono", "solo", "mute", "gain", "gate", "comp"];
-const parameterBusNames = ["mono", "mute", "gain"];
+const stripParametersNames = ["mono", "solo", "mute", "gain", "gate", "comp"];
+const busesParametersNames = ["mono", "mute", "gain"];
 
-parameterBusNames.forEach((name) => {
+busesParametersNames.forEach((name) => {
 
 	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -256,7 +249,7 @@ parameterBusNames.forEach((name) => {
 	}
 });;
 
-parameterStripNames.forEach((name) => {
+stripParametersNames.forEach((name) => {
 
 	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
 
