@@ -81,7 +81,7 @@ const voicemeeter = {
     if (!this.isConnected) {
       throw "Not connected ";
     }
-    var hardwareIdPtr = new Buffer(parameterName.length + 1);;
+    var hardwareIdPtr = Buffer.alloc(parameterName.length + 1);;
     hardwareIdPtr.write(parameterName)
     var namePtr = new FloatArray(1);
     libvoicemeeter.VBVMR_GetParameterFloat(hardwareIdPtr, namePtr);
@@ -184,7 +184,7 @@ const voicemeeter = {
   },
 
   _sendRawParaneterScript(scriptString) {
-    const script = new Buffer(scriptString.length + 1);
+    const script = Buffer.alloc(scriptString.length + 1);
     script.fill(0);
     script.write(scriptString);
     return libvoicemeeter.VBVMR_SetParameters(script);
