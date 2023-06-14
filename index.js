@@ -87,37 +87,6 @@ const voicemeeter = {
 		return namePtr[0];
 	},
 
-	_getVoicemeeterType() {
-
-		const typePtr = new LongArray(1);
-		if (libvoicemeeter.VBVMR_GetVoicemeeterType(typePtr) !== 0)
-			throw "Running failed";
-
-		switch (typePtr[0]) {
-			case 1: // Voicemeeter software
-				return VoicemeeterType.voicemeeter;
-			case 2: // Voicemeeter Banana software
-				return VoicemeeterType.voicemeeterBanana
-			case 3: // Voicemeeter Potato software
-				return VoicemeeterType.voicemeeterPotato
-			default: // unknow software
-				return VoicemeeterType.unknow
-		}
-	},
-
-	_getVoicemeeterVersion() {
-
-		const versionPtr = new LongArray(1);
-		if (libvoicemeeter.VBVMR_GetVoicemeeterVersion(versionPtr) !== 0)
-			throw "Running failed";
-
-		const v4 = versionPtr[0] % (2 ^ 8);
-		const v3 = parseInt((versionPtr[0] - v4) % Math.pow(2, 16) / Math.pow(2, 8));
-		const v2 = parseInt(((versionPtr[0] - v3 * 256 - v4) % Math.pow(2, 24)) / Math.pow(2, 16));
-		const v1 = parseInt((versionPtr[0] - v2 * 512 - v3 * 256 - v4) / Math.pow(2, 24));
-		return `${v1}.${v2}.${v3}.${v4}`;
-	},
-
 	login() {
 
 		if (!this.isInitialised)
@@ -189,11 +158,35 @@ const voicemeeter = {
 		}
 	},
 
-	_sendRawParameterScript(scriptString) {
-		const script = Buffer.alloc(scriptString.length + 1);
-		script.fill(0);
-		script.write(scriptString);
-		return libvoicemeeter.VBVMR_SetParameters(script);
+	_getVoicemeeterType() {
+
+		const typePtr = new LongArray(1);
+		if (libvoicemeeter.VBVMR_GetVoicemeeterType(typePtr) !== 0)
+			throw "Running failed";
+
+		switch (typePtr[0]) {
+			case 1: // Voicemeeter software
+				return VoicemeeterType.voicemeeter;
+			case 2: // Voicemeeter Banana software
+				return VoicemeeterType.voicemeeterBanana
+			case 3: // Voicemeeter Potato software
+				return VoicemeeterType.voicemeeterPotato
+			default: // unknow software
+				return VoicemeeterType.unknow
+		}
+	},
+
+	_getVoicemeeterVersion() {
+
+		const versionPtr = new LongArray(1);
+		if (libvoicemeeter.VBVMR_GetVoicemeeterVersion(versionPtr) !== 0)
+			throw "Running failed";
+
+		const v4 = versionPtr[0] % (2 ^ 8);
+		const v3 = parseInt((versionPtr[0] - v4) % Math.pow(2, 16) / Math.pow(2, 8));
+		const v2 = parseInt(((versionPtr[0] - v3 * 256 - v4) % Math.pow(2, 24)) / Math.pow(2, 16));
+		const v1 = parseInt((versionPtr[0] - v2 * 512 - v3 * 256 - v4) / Math.pow(2, 24));
+		return `${v1}.${v2}.${v3}.${v4}`;
 	},
 
 	_setParameter(type, name, id, value) {
@@ -237,6 +230,13 @@ const voicemeeter = {
 		}).join("\n");
 
 		return this._sendRawParameterScript(script);
+	},
+
+	_sendRawParameterScript(scriptString) {
+		const script = Buffer.alloc(scriptString.length + 1);
+		script.fill(0);
+		script.write(scriptString);
+		return libvoicemeeter.VBVMR_SetParameters(script);
 	}
 }
 
