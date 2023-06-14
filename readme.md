@@ -11,7 +11,7 @@ $ npm i voicemeeter-remote --save
 ### Then use it in your own program
 
 ```js
-const voicemeeter = require('voicemeeter-remote');
+const voicemeeter = require("voicemeeter-remote");
 
 voicemeeter.init().then(() => {
     voicemeeter.login();

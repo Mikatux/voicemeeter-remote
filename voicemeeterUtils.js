@@ -106,15 +106,15 @@ const VoicemeeterDefaultConfig = { // key is VoicemeeterType
 }
 
 const VoicemeeterType = {
-    'unknow': 0,
-    'voicemeeter': 1,
-    'voicemeeterBanana': 2,
-    'voicemeeterPotato': 3
+    "unknow": 0,
+    "voicemeeter": 1,
+    "voicemeeterBanana": 2,
+    "voicemeeterPotato": 3
 }
 
 const InterfaceType = {
-    'strip': 0,
-    'bus': 1,
+    "strip": 0,
+    "bus": 1,
 }
 
 module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType };

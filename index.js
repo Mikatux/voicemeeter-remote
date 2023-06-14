@@ -1,20 +1,20 @@
-const ffi = require('ffi-napi');
-const Registry = require('winreg');
+const ffi = require("ffi-napi");
+const Registry = require("winreg");
 
-const ArrayType = require('ref-array-napi');
-const CharArray = ArrayType('char');
-const LongArray = ArrayType('long');
-const FloatArray = ArrayType('float');
+const ArrayType = require("ref-array-napi");
+const CharArray = ArrayType("char");
+const LongArray = ArrayType("long");
+const FloatArray = ArrayType("float");
 
 async function getDLLPath() {
 	const regKey = new Registry({
 		hive: Registry.HKLM,
-		key: '\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VB:Voicemeeter {17359A74-1236-5467}'
+		key: "\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\VB:Voicemeeter {17359A74-1236-5467}"
 	});
 	return new Promise(resolve => {
 		regKey.values((err, items) => {
-			const unistallerPath = items.find(i => i.name === 'UninstallString').value;
-			const fileNameIndex = unistallerPath.lastIndexOf('\\')
+			const unistallerPath = items.find(i => i.name === "UninstallString").value;
+			const fileNameIndex = unistallerPath.lastIndexOf("\\")
 			resolve(unistallerPath.slice(0, fileNameIndex));
 		});
 	});
@@ -24,7 +24,7 @@ const {
 	VoicemeeterDefaultConfig,
 	VoicemeeterType,
 	InterfaceType
-} = require('./voicemeeterUtils');
+} = require("./voicemeeterUtils");
 
 const isEmpty = function (object) {
 	for (let key in object) {
@@ -48,23 +48,23 @@ const voicemeeter = {
 
 	async init() {
 
-		libvoicemeeter = ffi.Library(await getDLLPath() + '/VoicemeeterRemote64.dll', {
-			'VBVMR_Login': ['long', []],
-			'VBVMR_Logout': ['long', []],
-			'VBVMR_RunVoicemeeter': ['long', ['long']],
+		libvoicemeeter = ffi.Library(await getDLLPath() + "/VoicemeeterRemote64.dll", {
+			"VBVMR_Login": ["long", []],
+			"VBVMR_Logout": ["long", []],
+			"VBVMR_RunVoicemeeter": ["long", ["long"]],
 
-			'VBVMR_GetVoicemeeterType': ['long', [LongArray]],
-			'VBVMR_GetVoicemeeterVersion': ['long', [LongArray]],
+			"VBVMR_GetVoicemeeterType": ["long", [LongArray]],
+			"VBVMR_GetVoicemeeterVersion": ["long", [LongArray]],
 
-			'VBVMR_IsParametersDirty': ['long', []],
-			'VBVMR_GetParameterFloat': ['long', [CharArray, FloatArray]],
-			'VBVMR_GetParameterStringA': ['long', [CharArray, CharArray]],
+			"VBVMR_IsParametersDirty": ["long", []],
+			"VBVMR_GetParameterFloat": ["long", [CharArray, FloatArray]],
+			"VBVMR_GetParameterStringA": ["long", [CharArray, CharArray]],
 
-			'VBVMR_SetParameters': ['long', [CharArray]],
-			'VBVMR_Output_GetDeviceNumber': ['long', []],
-			'VBVMR_Output_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
-			'VBVMR_Input_GetDeviceNumber': ['long', []],
-			'VBVMR_Input_GetDeviceDescA': ['long', ['long', LongArray, CharArray, CharArray]],
+			"VBVMR_SetParameters": ["long", [CharArray]],
+			"VBVMR_Output_GetDeviceNumber": ["long", []],
+			"VBVMR_Output_GetDeviceDescA": ["long", ["long", LongArray, CharArray, CharArray]],
+			"VBVMR_Input_GetDeviceNumber": ["long", []],
+			"VBVMR_Input_GetDeviceDescA": ["long", ["long", LongArray, CharArray, CharArray]],
 		});
 		this.isInitialised = true;
 	},
@@ -168,8 +168,8 @@ const voicemeeter = {
 
 			libvoicemeeter.VBVMR_Output_GetDeviceDescA(i, typePtr, namePtr, hardwareIdPtr);
 			this.outputDevices.push({
-				name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ''),
-				hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ''),
+				name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ""),
+				hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ""),
 				type: typePtr[0]
 			})
 		}
@@ -183,8 +183,8 @@ const voicemeeter = {
 
 			libvoicemeeter.VBVMR_Input_GetDeviceDescA(i, typePtr, namePtr, hardwareIdPtr);
 			this.inputDevices.push({
-				name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ''),
-				hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ''),
+				name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ""),
+				hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ""),
 				type: typePtr[0]
 			})
 		}
@@ -205,8 +205,8 @@ const voicemeeter = {
 		if (!this.voicemeeterConfig || isEmpty(this.voicemeeterConfig)) {
 			throw "Configuration error  ";
 		}
-		const interfaceType = type === InterfaceType.strip ? 'Strip' : 'Bus';
-		const voicemeeterConfigObject = type === InterfaceType.strip ? 'strips' : 'buses';
+		const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
+		const voicemeeterConfigObject = type === InterfaceType.strip ? "strips" : "buses";
 
 		if (this.voicemeeterConfig[voicemeeterConfigObject].findIndex(strip => strip.id === id) === -1) {
 			throw `${interfaceType} ${id} not found`;
@@ -229,30 +229,30 @@ const voicemeeter = {
 		}
 
 		const script = parameters.map(p => {
-			const interfaceType = p.type === InterfaceType.strip ? 'Strip' : 'Bus';
-			const voicemeeterConfigObject = p.type === InterfaceType.strip ? 'strips' : 'buses';
+			const interfaceType = p.type === InterfaceType.strip ? "Strip" : "Bus";
+			const voicemeeterConfigObject = p.type === InterfaceType.strip ? "strips" : "buses";
 
 			if (!this.voicemeeterConfig[voicemeeterConfigObject].find(strip => strip.id === p.id)) {
 				throw interfaceType + " not found";
 			}
 			return `${interfaceType}[${p.id}].${p.name}=${p.value};`;
-		}).join('\n')
+		}).join("\n")
 
 		return this._sendRawParaneterScript(script);
 	},
 }
 
 //Create setter function
-const parameterStripNames = ['mono', 'solo', 'mute', 'gain', 'gate', 'comp'];
-const parameterBusNames = ['mono', 'mute', 'gain'];
+const parameterStripNames = ["mono", "solo", "mute", "gain", "gate", "comp"];
+const parameterBusNames = ["mono", "mute", "gain"];
 
 parameterBusNames.forEach(name => {
 
 	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
 
 	voicemeeter[`setBus${capitalizedName}`] = function (busNumber, value) {
-		if (typeof (value) === 'boolean') {
-			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value ? '1' : '0')
+		if (typeof (value) === "boolean") {
+			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value ? "1" : "0")
 		} else {
 			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value)
 		}
@@ -264,8 +264,8 @@ parameterStripNames.forEach(name => {
 	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
 
 	voicemeeter[`setStrip${capitalizedName}`] = function (stripNumber, value) {
-		if (typeof (value) === 'boolean') {
-			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value ? '1' : '0')
+		if (typeof (value) === "boolean") {
+			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value ? "1" : "0")
 		} else {
 			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value)
 		}
@@ -273,31 +273,3 @@ parameterStripNames.forEach(name => {
 })
 
 module.exports = voicemeeter;
-
-// For test only
-/*
-async function start(){
-  try{
-	await voicemeeter.init();
-	voicemeeter.login();
-	voicemeeter.updateDeviceList();
-
-	voicemeeter.inputDevices.forEach(d => {
-	  console.log(d)
-	})
-	console.log('voicemeeter version',voicemeeter.version);
-	console.log(voicemeeter.getParameter('Strip[1].gain'));
-    
-	setInterval(()=>{
-	  if(voicemeeter.isParametersDirty()){
-		console.log(voicemeeter.getParameter('Strip[1].gain'));
-	  }
-	},10)
-	//voicemeeter.logout();
-  }
-  catch(e){
-	console.log(e)
-  }
-}
-start();
-// */
