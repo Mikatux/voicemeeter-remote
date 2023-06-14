@@ -161,11 +161,11 @@ const voicemeeter = {
 			case 1: // Voicemeeter software
 				return VoicemeeterType.voicemeeter;
 			case 2: // Voicemeeter Banana software
-				return VoicemeeterType.voicemeeterBanana
+				return VoicemeeterType.voicemeeterBanana;
 			case 3: // Voicemeeter Potato software
-				return VoicemeeterType.voicemeeterPotato
+				return VoicemeeterType.voicemeeterPotato;
 			default: // unknow software
-				return VoicemeeterType.unknow
+				return VoicemeeterType.unknow;
 		}
 	},
 
