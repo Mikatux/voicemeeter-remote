@@ -13,7 +13,7 @@ $ npm i voicemeeter-remote --save
 ```js
 const voicemeeter = require('voicemeeter-remote');
 
-voicemeeter.init().then(()=>{
+voicemeeter.init().then(() => {
     voicemeeter.login();
 })
 ```
@@ -32,9 +32,9 @@ voicemeeter.logout();
   - Set all the parameters like : 'mono', 'solo', 'mute', 'gain', 'gate', 'comp' for each Strip and Bus
 ```js
 // Set the gain of the first Strip to -10db
-voicemeeter.setStripGain(0,-10);
+voicemeeter.setStripGain(0, -10);
 // Mute the second Bus
-voicemeeter.setBusMute(1,true);
+voicemeeter.setBusMute(1, true);
 ```
    - Get all input/output devices
 ```js
