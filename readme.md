@@ -15,7 +15,7 @@ const voicemeeter = require("voicemeeter-remote");
 
 voicemeeter.init().then(() => {
     voicemeeter.login();
-})
+});
 ```
 
 After the login method is successful you can use all the methods to interact with the instance of Voicemeeter
@@ -42,9 +42,9 @@ voicemeeter.setBusMute(1, true);
 // They will be stored into an array in the voicemeeter-remote instance
 voicemeeter.updateDeviceList();
 // Get input devices
-console.log(voicemeeter.inputDevices)
+console.log(voicemeeter.inputDevices);
 // Get output devices
-console.log(voicemeeter.outputDevices)
+console.log(voicemeeter.outputDevices);
 ```
 
 # Todos
