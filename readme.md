@@ -61,9 +61,9 @@ Fork the project make your change then do a pull request.
 
 #### Dependencies
 
-[`ffi`][ffi] => Read and execute the VoicemeeterRemote DLL
+[`ffi-napi`][ffi-napi] => Read and execute the VoicemeeterRemote DLL
 
-[`ref-array`][ref-array] => Create array (*pointer) for `ffi` to return string from the DLL
+[`ref-array-napi`][ref-array-napi] => Create array (*pointer) for `ffi-napi` to return string from the DLL
 
 [`winreg`][winreg] => Read the windows registery to find Voicemeeter installation folder and the DLL
 
