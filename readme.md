@@ -80,6 +80,6 @@ MIT
    [voicemeeter]: <https://www.vb-audio.com/Voicemeeter/index.htm>
    [voicemeeter-banana]: <https://www.vb-audio.com/Voicemeeter/banana.htm>
    [voicemeeter-api]: <https://github.com/Mikatux/voicemeeter-api>
-   [ffi]: <https://www.npmjs.com/package/ffi>
-   [ref-array]: <https://www.npmjs.com/package/ref-array>
+   [ffi-napi]: <https://www.npmjs.com/package/ffi-napi>
+   [ref-array-napi]: <https://www.npmjs.com/package/ref-array-napi>
    [winreg]: <https://www.npmjs.com/package/winreg>
