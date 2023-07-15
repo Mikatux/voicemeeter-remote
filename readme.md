@@ -48,7 +48,6 @@ console.log(voicemeeter.outputDevices);
 ```
 
 # Todos
-- Parameters Getters
 - Stream Getters
 - 32bit compatibility
 - Implement all methods available in the DLL

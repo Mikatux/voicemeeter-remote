@@ -113,8 +113,30 @@ const VoicemeeterType = {
 }
 
 const InterfaceType = {
-    "strip": 0,
-    "bus": 1,
+    strip: 0,
+    bus: 1,
 }
 
-module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType };
+const MacroButtonState = {
+    disabled: 0,
+    enabled: 1
+}
+
+const MacroButtonTrigger = {
+    disabled: 0,
+    enabled: 1
+}
+
+const MacroButtonColor = {
+    default: 0,
+    brown: 1,
+    yellow: 2,
+    green: 3,
+    cyan: 4,
+    blue: 5,
+    darkblue: 6,
+    pink: 7,
+    red: 8
+}
+
+module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor };
