@@ -7,7 +7,7 @@ const CharArray = ArrayType("char");
 const LongArray = ArrayType("long");
 const FloatArray = ArrayType("float");
 
-const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType } = require("./voicemeeterUtils");
+const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterUtils");
 
 const getDLLPath = () => {
 	const regKey = new Registry({
@@ -68,6 +68,9 @@ const voicemeeter = {
 		return libvoicemeeter.VBVMR_IsParametersDirty();
 	},
 
+	/**
+	 * @deprecated
+	 */
 	getParameter(parameterName) {
 
 		if (!this.isConnected)
@@ -151,6 +154,95 @@ const voicemeeter = {
 		}
 	},
 
+	showVoicemeeter() {
+		if (this._sendRawParameterScript("Command.Show=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	shutdownVoicemeeter() {
+		if (this._sendRawParameterScript("Command.Shutdown=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	restartVoicemeeterAudioEngine() {
+		if (this._sendRawParameterScript("Command.Restart=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	ejectVoicemeeterCassette() {
+		if (this._sendRawParameterScript("Command.Eject=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	resetVoicemeeterConfiguration() {
+		if (this._sendRawParameterScript("Command.Reset=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	saveVoicemeeterConfiguration(filename) {
+		if (this._sendRawParameterScript("Command.Save=" + filename + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	loadVoicemeeterConfiguration(filename) {
+		if (this._sendRawParameterScript("Command.Load=" + filename + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	lockVoicemeeterGui(lock) {
+		if (this._sendRawParameterScript("Command.Lock=" + (lock ? 1 : 0) + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	setMacroButtonState(button, state) {
+		if (!Object.values(MacroButtonState).includes(state))
+			throw "Invalid state";
+		if (this._sendRawParameterScript("Command.Button[" + button + "].State=" + state + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	setMacroButtonStateOnly(button, state) {
+		if (!Object.values(MacroButtonState).includes(state))
+			throw "Invalid state";
+		if (this._sendRawParameterScript("Command.Button[" + button + "].StateOnly=" + state + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	setMacroButtonTrigger(button, trigger) {
+		if (!Object.values(MacroButtonTrigger).includes(trigger))
+			throw "Invalid trigger";
+		if (this._sendRawParameterScript("Command.Button[" + button + "].Trigger=" + trigger + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	/**
+	 * Seems to be broken in the Voicemeeter API
+	 */
+	setMacroButtonColor(button, color) {
+		if (!Object.values(MacroButtonColor).includes(color))
+			throw "Invalid color";
+		if (this._sendRawParameterScript("Command.Button[" + button + "].Color=" + color + ";") === 0)
+			return;
+		throw "Running failed";
+	},
+
+	showVbanChatDialog() {
+		if (this._sendRawParameterScript("Command.DialogShow.VBANCHAT=1;") === 0)
+			return;
+		throw "Running failed";
+	},
+
 	_getVoicemeeterType() {
 
 		const typePtr = new LongArray(1);
@@ -182,6 +274,31 @@ const voicemeeter = {
 		return `${v1}.${v2}.${v3}.${v4}`;
 	},
 
+	_getParameter(type, name, id) {
+
+		if (!this.isConnected)
+			throw "Not connected";
+
+		if (!this.voicemeeterConfig)
+			throw "Configuration error";
+
+		if (!Object.values(InterfaceType).includes(type))
+			throw "Invalid trigger";
+
+		const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
+
+		if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
+			throw `${interfaceType} ${id} not found`;
+
+		const parameterName = `${interfaceType}[${id}].${name};`;
+
+		const hardwareIdPtr = Buffer.alloc(parameterName.length + 1);
+		hardwareIdPtr.write(parameterName);
+		const namePtr = new FloatArray(1);
+		libvoicemeeter.VBVMR_GetParameterFloat(hardwareIdPtr, namePtr);
+		return namePtr[0];
+	},
+
 	_setParameter(type, name, id, value) {
 
 		if (!this.isConnected)
@@ -190,10 +307,12 @@ const voicemeeter = {
 		if (!this.voicemeeterConfig)
 			throw "Configuration error";
 
-		const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
-		const voicemeeterConfigObject = type === InterfaceType.strip ? "strips" : "buses";
+		if (!Object.values(InterfaceType).includes(type))
+			throw "Invalid trigger";
 
-		if (this.voicemeeterConfig[voicemeeterConfigObject].findIndex((strip) => strip.id === id) === -1)
+		const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
+
+		if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
 			throw `${interfaceType} ${id} not found`;
 
 		return this._sendRawParameterScript(`${interfaceType}[${id}].${name}=${value};`);
@@ -212,11 +331,13 @@ const voicemeeter = {
 
 		const script = parameters.map((parameter) => {
 
-			const interfaceType = parameter.type === InterfaceType.strip ? "Strip" : "Bus";
-			const voicemeeterConfigObject = parameter.type === InterfaceType.strip ? "strips" : "buses";
+			if (!Object.values(InterfaceType).includes(parameter.type))
+				throw "Invalid trigger";
 
-			if (!this.voicemeeterConfig[voicemeeterConfigObject].find((strip) => strip.id === parameter.id))
-				throw interfaceType + " not found";
+			const interfaceType = parameter.type === InterfaceType.strip ? "Strip" : "Bus";
+
+			if (!this.voicemeeterConfig[parameter.type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === parameter.id))
+				throw `${interfaceType} ${parameter.id} not found`;
 
 			return `${interfaceType}[${parameter.id}].${parameter.name}=${parameter.value};`;
 
@@ -233,27 +354,22 @@ const voicemeeter = {
 	}
 }
 
-// Create setter function
-const stripParametersNames = ["mono", "solo", "mute", "gain", "gate", "comp"];
-const busesParametersNames = ["mono", "mute", "gain"];
+const busesParametersNames = ["Mono", "Mute", "Gain"];
+const stripParametersNames = ["Mono", "Mute", "Solo", "MC", "Gain", "Pan_x", "Pan_y", "Color_x", "Color_y", "fx_x", "fx_y", "Audibility", "Gate", "Comp", "A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3"];
 
 busesParametersNames.forEach((name) => {
 
-	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
-
-	voicemeeter[`setBus${capitalizedName}`] = (busNumber, value) => {
+	voicemeeter[`setBus${name}`] = (busNumber, value) => {
 		if (typeof value === "boolean")
 			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value ? 1 : 0);
 		else
 			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value);
 	}
-});;
+});
 
 stripParametersNames.forEach((name) => {
 
-	const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
-
-	voicemeeter[`setStrip${capitalizedName}`] = (stripNumber, value) => {
+	voicemeeter[`setStrip${name}`] = (stripNumber, value) => {
 		if (typeof value === "boolean")
 			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value ? 1 : 0);
 		else
@@ -262,3 +378,8 @@ stripParametersNames.forEach((name) => {
 });
 
 module.exports = voicemeeter;
+module.exports.VoicemeeterType = VoicemeeterType;
+module.exports.InterfaceType = InterfaceType;
+module.exports.MacroButtonState = MacroButtonState;
+module.exports.MacroButtonTrigger = MacroButtonTrigger;
+module.exports.MacroButtonColor = MacroButtonColor;
