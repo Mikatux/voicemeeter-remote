@@ -365,6 +365,10 @@ busesParametersNames.forEach((name) => {
 		else
 			voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value);
 	}
+
+	voicemeeter[`getBus${name}`] = (busNumber) => {
+		return voicemeeter._getParameter(InterfaceType.bus, name, busNumber);
+	}
 });
 
 stripParametersNames.forEach((name) => {
@@ -374,6 +378,10 @@ stripParametersNames.forEach((name) => {
 			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value ? 1 : 0);
 		else
 			voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value);
+	}
+
+	voicemeeter[`getStrip${name}`] = (stripNumber) => {
+		return voicemeeter._getParameter(InterfaceType.strip, name, stripNumber);
 	}
 });
 
