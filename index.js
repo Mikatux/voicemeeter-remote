@@ -115,6 +115,14 @@ const voicemeeter = {
 		throw "Logout failed";
 	},
 
+	getOutputDeviceNumber() {
+		return libvoicemeeter.VBVMR_Output_GetDeviceNumber();
+	},
+
+	getInputDeviceNumber() {
+		return libvoicemeeter.VBVMR_Input_GetDeviceNumber();
+	},
+
 	updateDeviceList() {
 
 		if (!this.isConnected)
@@ -123,7 +131,7 @@ const voicemeeter = {
 		this.outputDevices = [];
 		this.inputDevices = [];
 
-		const outputDeviceNumber = libvoicemeeter.VBVMR_Output_GetDeviceNumber();
+		const outputDeviceNumber = this.getOutputDeviceNumber();
 		for (let i = 0; i < outputDeviceNumber; i++) {
 
 			const hardwareIdPtr = new CharArray(256);
@@ -138,7 +146,7 @@ const voicemeeter = {
 			});
 		}
 
-		const inputDeviceNumber = libvoicemeeter.VBVMR_Input_GetDeviceNumber();
+		const inputDeviceNumber = this.getInputDeviceNumber();
 		for (let i = 0; i < inputDeviceNumber; i++) {
 
 			const hardwareIdPtr = new CharArray(256);
