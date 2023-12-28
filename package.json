@@ -8,7 +8,7 @@
   "dependencies": {
     "ffi-napi": "^4.0.3",
     "ref-array-napi": "^1.2.2",
-    "winreg": "^1.2.4"
+    "winreg": "^1.2.5"
   },
   "repository": {
     "type": "git",

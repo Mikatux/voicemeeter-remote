@@ -7,7 +7,7 @@ const CharArray = ArrayType("char");
 const LongArray = ArrayType("long");
 const FloatArray = ArrayType("float");
 
-const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterUtils");
+const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterEnums");
 
 const getDLLPath = () => {
 	const regKey = new Registry({
@@ -264,8 +264,10 @@ const voicemeeter = {
 				return VoicemeeterType.voicemeeterBanana;
 			case 3: // Voicemeeter Potato software
 				return VoicemeeterType.voicemeeterPotato;
-			default: // unknow software
-				return VoicemeeterType.unknow;
+			case 6: // Voicemeeter Potato software
+				return VoicemeeterType.voicemeeterPotato64;
+			default: // Unknown type
+				return VoicemeeterType.unknown;
 		}
 	},
 
