@@ -1,6 +1,6 @@
 {
   "name": "voicemeeter-remote",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "A Node.js voicemeeter remote wrapper",
   "main": "index.js",
   "author": "Mickael MAYEUR",
