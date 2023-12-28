@@ -168,6 +168,20 @@ const InterfaceType = {
     bus: 1
 }
 
+const LevelType = {
+    preFaderInput: 0,
+    postFaderInput: 1,
+    postMuteInput: 2,
+    output: 3
+}
+
+const DeviceType = {
+    mme: 1,
+    wdm: 3,
+    ks: 4,
+    asio: 5
+}
+
 const MacroButtonState = {
     disabled: 0,
     enabled: 1
@@ -190,4 +204,4 @@ const MacroButtonColor = {
     red: 8
 }
 
-module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor };
+module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, LevelType, DeviceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor };

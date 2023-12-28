@@ -6,8 +6,7 @@
   "author": "Mickael MAYEUR",
   "license": "MIT",
   "dependencies": {
-    "ffi-napi": "^4.0.3",
-    "ref-array-napi": "^1.2.2",
+    "koffi": "^2.7.0",
     "winreg": "^1.2.5"
   },
   "repository": {

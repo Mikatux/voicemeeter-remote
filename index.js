@@ -1,11 +1,6 @@
 const { dirname, join } = require("path");
 const Registry = require("winreg");
-const ffi = require("ffi-napi");
-
-const ArrayType = require("ref-array-napi");
-const CharArray = ArrayType("char");
-const LongArray = ArrayType("long");
-const FloatArray = ArrayType("float");
+const koffi = require("koffi");
 
 const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterEnums");
 
@@ -26,8 +21,8 @@ let libvoicemeeter;
 
 const voicemeeter = {
 
-    isConnected: false,
     isInitialised: false,
+    isConnected: false,
     outputDevices: [],
     inputDevices: [],
     type: 0,
@@ -36,32 +31,58 @@ const voicemeeter = {
 
     async init() {
 
-        libvoicemeeter = ffi.Library(await getDLLPath(), {
-            "VBVMR_Login": ["long", []],
-            "VBVMR_Logout": ["long", []],
-            "VBVMR_RunVoicemeeter": ["long", ["long"]],
+        const dll = koffi.load(await getDLLPath());
 
-            "VBVMR_GetVoicemeeterType": ["long", [LongArray]],
-            "VBVMR_GetVoicemeeterVersion": ["long", [LongArray]],
+        libvoicemeeter = {
+            // Login
+            VBVMR_Login: dll.func("long __stdcall VBVMR_Login(void)"),
+            VBVMR_Logout: dll.func("long __stdcall VBVMR_Logout(void)"),
+            VBVMR_RunVoicemeeter: dll.func("long __stdcall VBVMR_RunVoicemeeter(long vType)"),
 
-            "VBVMR_IsParametersDirty": ["long", []],
-            "VBVMR_GetParameterFloat": ["long", [CharArray, FloatArray]],
-            "VBVMR_GetParameterStringA": ["long", [CharArray, CharArray]],
+            // General informations
+            VBVMR_GetVoicemeeterType: dll.func("long __stdcall VBVMR_GetVoicemeeterType(_Out_ long * pType)"),
+            VBVMR_GetVoicemeeterVersion: dll.func("long __stdcall VBVMR_GetVoicemeeterVersion(_Out_ long * pVersion)"),
 
-            "VBVMR_SetParameters": ["long", [CharArray]],
-            "VBVMR_Output_GetDeviceNumber": ["long", []],
-            "VBVMR_Output_GetDeviceDescA": ["long", ["long", LongArray, CharArray, CharArray]],
-            "VBVMR_Input_GetDeviceNumber": ["long", []],
-            "VBVMR_Input_GetDeviceDescA": ["long", ["long", LongArray, CharArray, CharArray]],
-        });
+            // Get parameters
+            VBVMR_IsParametersDirty: dll.func("long __stdcall VBVMR_IsParametersDirty(void)"),
+            VBVMR_GetParameterFloat: dll.func("long __stdcall VBVMR_GetParameterFloat(char * szParamName, _Out_ float * pValue)"),
+            VBVMR_GetParameterStringA: dll.func("long __stdcall VBVMR_GetParameterStringA(char * szParamName, _Out_ void * szString)"),
+            VBVMR_GetParameterStringW: dll.func("long __stdcall VBVMR_GetParameterStringW(char * szParamName, _Out_ unsigned short * wszString)"), // Not tested
+
+            // Get levels
+            VBVMR_GetLevel: dll.func("long __stdcall VBVMR_GetLevel(long nType, long nuChannel, _Out_ float * pValue)"),
+            VBVMR_GetMidiMessage: dll.func("long __stdcall VBVMR_GetMidiMessage(_Out_ unsigned char *pMIDIBuffer, long nbByteMax)"), // Not tested
+            VBVMR_SendMidiMessage: dll.func("long __stdcall VBVMR_SendMidiMessage(_Out_ unsigned char *pMIDIBuffer, long nbByte)"), // Not tested
+
+            // Set parameters
+            VBVMR_SetParameterFloat: dll.func("long __stdcall VBVMR_SetParameterFloat(char * szParamName, float Value)"),
+            VBVMR_SetParameterStringA: dll.func("long __stdcall VBVMR_SetParameterStringA(char * szParamName, char * szString)"), // Not tested
+            VBVMR_SetParameterStringW: dll.func("long __stdcall VBVMR_SetParameterStringW(char * szParamName, unsigned short * wszString)"), // Not tested
+            VBVMR_SetParameters: dll.func("long __stdcall VBVMR_SetParameters(char * szParamScript)"),
+            VBVMR_SetParametersW: dll.func("long __stdcall VBVMR_SetParametersW(unsigned short * szParamScript)"), // Not tested
+
+            // Devices enumerator
+            VBVMR_Output_GetDeviceNumber: dll.func("long __stdcall VBVMR_Output_GetDeviceNumber(void)"),
+            VBVMR_Output_GetDeviceDescA: dll.func("long __stdcall VBVMR_Output_GetDeviceDescA(long zindex, _Out_ long * nType, _Out_ void * szDeviceName, _Out_ void * szHardwareId)"),
+            VBVMR_Output_GetDeviceDescW: dll.func("long __stdcall VBVMR_Output_GetDeviceDescW(long zindex, _Out_ long * nType, _Out_ unsigned short * wszDeviceName, _Out_ unsigned short * wszHardwareId)"), // Not tested
+            VBVMR_Input_GetDeviceNumber: dll.func("long __stdcall VBVMR_Input_GetDeviceNumber(void)"),
+            VBVMR_Input_GetDeviceDescA: dll.func("long __stdcall VBVMR_Input_GetDeviceDescA(long zindex, _Out_ long * nType, _Out_ void * szDeviceName, _Out_ void * szHardwareId)"),
+            VBVMR_Input_GetDeviceDescW: dll.func("long __stdcall VBVMR_Input_GetDeviceDescW(long zindex, _Out_ long * nType, _Out_ unsigned short * wszDeviceName, _Out_ unsigned short * wszHardwareId)"), // Not tested
+
+            // TODO Implement callback
+
+            // Macro buttons
+            VBVMR_MacroButton_IsDirty: dll.func("long __stdcall VBVMR_MacroButton_IsDirty(void)"),
+            VBVMR_MacroButton_GetStatus: dll.func("long __stdcall VBVMR_MacroButton_GetStatus(long nuLogicalButton, _Out_ float * pValue, long bitmode)"),
+            VBVMR_MacroButton_SetStatus: dll.func("long __stdcall VBVMR_MacroButton_SetStatus(long nuLogicalButton, float fValue, long bitmode)")
+        };
 
         this.isInitialised = true;
     },
 
-    runvoicemeeter(voicemeeterType) {
-        if (libvoicemeeter.VBVMR_RunVoicemeeter(voicemeeterType) === 0)
-            return;
-        throw "Running failed";
+    runVoicemeeter(voicemeeterType) {
+        if (libvoicemeeter.VBVMR_RunVoicemeeter(voicemeeterType) !== 0)
+            throw "Running failed";
     },
 
     isParametersDirty() {
@@ -69,18 +90,18 @@ const voicemeeter = {
     },
 
     /**
-     * @deprecated
+     * @deprecated 
      */
     getParameter(parameterName) {
 
         if (!this.isConnected)
             throw "Not connected";
 
-        const hardwareIdPtr = Buffer.alloc(parameterName.length + 1);
-        hardwareIdPtr.write(parameterName);
-        const namePtr = new FloatArray(1);
-        libvoicemeeter.VBVMR_GetParameterFloat(hardwareIdPtr, namePtr);
-        return namePtr[0];
+        const value = [0];
+        if (libvoicemeeter.VBVMR_GetParameterFloat(parameterName, value) !== 0)
+            throw "Running failed";
+
+        return value[0];
     },
 
     login() {
@@ -89,17 +110,15 @@ const voicemeeter = {
             throw "Await the initialization before login";
 
         if (this.isConnected)
-            return;
+            throw "Already connected";
 
-        if (libvoicemeeter.VBVMR_Login() === 0) {
-            this.isConnected = true;
-            this.type = this._getVoicemeeterType();
-            this.version = this._getVoicemeeterVersion();
-            this.voicemeeterConfig = VoicemeeterDefaultConfig[this.type];
-            return;
-        }
+        if (libvoicemeeter.VBVMR_Login() !== 0)
+            throw "Login failed";
 
-        throw "Connection failed";
+        this.type = this._getVoicemeeterType();
+        this.version = this._getVoicemeeterVersion();
+        this.voicemeeterConfig = VoicemeeterDefaultConfig[this.type];
+        this.isConnected = true;
     },
 
     logout() {
@@ -107,12 +126,10 @@ const voicemeeter = {
         if (!this.isConnected)
             throw "Not connected";
 
-        if (libvoicemeeter.VBVMR_Logout() === 0) {
-            this.isConnected = false;
-            return;
-        }
+        if (libvoicemeeter.VBVMR_Logout() !== 0)
+            throw "Logout failed";
 
-        throw "Logout failed";
+        this.isConnected = false;
     },
 
     getOutputDeviceNumber() {
@@ -134,104 +151,86 @@ const voicemeeter = {
         const outputDeviceNumber = this.getOutputDeviceNumber();
         for (let i = 0; i < outputDeviceNumber; i++) {
 
-            const hardwareIdPtr = new CharArray(256);
-            const namePtr = new CharArray(256);
-            const typePtr = new LongArray(1);
+            const type = [0];
+            const deviceName = Buffer.alloc(256);
+            const hardwareId = Buffer.alloc(256);
 
-            libvoicemeeter.VBVMR_Output_GetDeviceDescA(i, typePtr, namePtr, hardwareIdPtr);
+            if (libvoicemeeter.VBVMR_Output_GetDeviceDescA(i, type, deviceName, hardwareId) !== 0)
+                throw "Running failed";
+
             this.outputDevices.push({
-                name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ""),
-                hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ""),
-                type: typePtr[0]
+                type: type[0],
+                name: deviceName.toString().replace(/\x00+$/, ""),
+                hardwareId: hardwareId.toString().replace(/\x00+$/, "")
             });
         }
 
         const inputDeviceNumber = this.getInputDeviceNumber();
         for (let i = 0; i < inputDeviceNumber; i++) {
 
-            const hardwareIdPtr = new CharArray(256);
-            const namePtr = new CharArray(256);
-            const typePtr = new LongArray(1);
+            const type = [0];
+            const deviceName = Buffer.alloc(256);
+            const hardwareId = Buffer.alloc(256);
 
-            libvoicemeeter.VBVMR_Input_GetDeviceDescA(i, typePtr, namePtr, hardwareIdPtr);
+            if (libvoicemeeter.VBVMR_Input_GetDeviceDescA(i, type, deviceName, hardwareId) !== 0)
+                throw "Running failed";
+
             this.inputDevices.push({
-                name: String.fromCharCode(...namePtr.toArray()).replace(/\u0000+$/g, ""),
-                hardwareId: String.fromCharCode(...hardwareIdPtr.toArray()).replace(/\u0000+$/g, ""),
-                type: typePtr[0]
+                type: type[0],
+                name: deviceName.toString().replace(/\x00+$/, ""),
+                hardwareId: hardwareId.toString().replace(/\x00+$/, "")
             });
         }
     },
 
     showVoicemeeter() {
-        if (this._sendRawParameterScript("Command.Show=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Show=1;");
     },
 
     shutdownVoicemeeter() {
-        if (this._sendRawParameterScript("Command.Shutdown=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Shutdown=1;");
     },
 
     restartVoicemeeterAudioEngine() {
-        if (this._sendRawParameterScript("Command.Restart=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Restart=1;");
     },
 
     ejectVoicemeeterCassette() {
-        if (this._sendRawParameterScript("Command.Eject=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Eject=1;");
     },
 
     resetVoicemeeterConfiguration() {
-        if (this._sendRawParameterScript("Command.Reset=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Reset=1;");
     },
 
     saveVoicemeeterConfiguration(filename) {
-        if (this._sendRawParameterScript("Command.Save=" + filename + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Save=" + filename + ";");
     },
 
     loadVoicemeeterConfiguration(filename) {
-        if (this._sendRawParameterScript("Command.Load=" + filename + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Load=" + filename + ";");
     },
 
     lockVoicemeeterGui(lock) {
-        if (this._sendRawParameterScript("Command.Lock=" + (lock ? 1 : 0) + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Lock=" + (lock ? 1 : 0) + ";");
     },
 
     setMacroButtonState(button, state) {
         if (!Object.values(MacroButtonState).includes(state))
             throw "Invalid state";
-        if (this._sendRawParameterScript("Command.Button[" + button + "].State=" + state + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Button[" + button + "].State=" + state + ";");
     },
 
     setMacroButtonStateOnly(button, state) {
         if (!Object.values(MacroButtonState).includes(state))
             throw "Invalid state";
-        if (this._sendRawParameterScript("Command.Button[" + button + "].StateOnly=" + state + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Button[" + button + "].StateOnly=" + state + ";");
     },
 
     setMacroButtonTrigger(button, trigger) {
         if (!Object.values(MacroButtonTrigger).includes(trigger))
             throw "Invalid trigger";
-        if (this._sendRawParameterScript("Command.Button[" + button + "].Trigger=" + trigger + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Button[" + button + "].Trigger=" + trigger + ";");
     },
 
     /**
@@ -240,51 +239,61 @@ const voicemeeter = {
     setMacroButtonColor(button, color) {
         if (!Object.values(MacroButtonColor).includes(color))
             throw "Invalid color";
-        if (this._sendRawParameterScript("Command.Button[" + button + "].Color=" + color + ";") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.Button[" + button + "].Color=" + color + ";");
     },
 
     showVbanChatDialog() {
-        if (this._sendRawParameterScript("Command.DialogShow.VBANCHAT=1;") === 0)
-            return;
-        throw "Running failed";
+        this._sendRawParameterScript("Command.DialogShow.VBANCHAT=1;");
+    },
+
+    getLevel(type, channel) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        const value = [0];
+
+        if (libvoicemeeter.VBVMR_GetLevel(type, channel, value) !== 0)
+            throw "Running failed";
+
+        return value[0];
     },
 
     _getVoicemeeterType() {
 
-        const typePtr = new LongArray(1);
-        if (libvoicemeeter.VBVMR_GetVoicemeeterType(typePtr) !== 0)
+        const voicemeeterType = [0];
+        if (libvoicemeeter.VBVMR_GetVoicemeeterType(voicemeeterType) !== 0)
             throw "Running failed";
 
-        switch (typePtr[0]) {
-            case 1: // Voicemeeter software
+        switch (voicemeeterType[0]) {
+            case 1:
                 return VoicemeeterType.voicemeeter;
-            case 2: // Voicemeeter Banana software
+            case 2:
                 return VoicemeeterType.voicemeeterBanana;
-            case 3: // Voicemeeter Potato software
+            case 3:
                 return VoicemeeterType.voicemeeterPotato;
-            case 6: // Voicemeeter Potato software
+            case 6:
                 return VoicemeeterType.voicemeeterPotato64;
-            default: // Unknown type
+            default:
                 return VoicemeeterType.unknown;
         }
     },
 
     _getVoicemeeterVersion() {
 
-        const versionPtr = new LongArray(1);
-        if (libvoicemeeter.VBVMR_GetVoicemeeterVersion(versionPtr) !== 0)
+        const voicemeeterVersion = [0];
+        if (libvoicemeeter.VBVMR_GetVoicemeeterVersion(voicemeeterVersion) !== 0)
             throw "Running failed";
 
-        const v4 = versionPtr[0] % (2 ^ 8);
-        const v3 = parseInt((versionPtr[0] - v4) % Math.pow(2, 16) / Math.pow(2, 8));
-        const v2 = parseInt(((versionPtr[0] - v3 * 256 - v4) % Math.pow(2, 24)) / Math.pow(2, 16));
-        const v1 = parseInt((versionPtr[0] - v2 * 512 - v3 * 256 - v4) / Math.pow(2, 24));
+        const v1 = (voicemeeterVersion[0] & 0xFF000000) >> 24;
+        const v2 = (voicemeeterVersion[0] & 0x00FF0000) >> 16;
+        const v3 = (voicemeeterVersion[0] & 0x0000FF00) >> 8;
+        const v4 = voicemeeterVersion[0] & 0x000000FF;
+
         return `${v1}.${v2}.${v3}.${v4}`;
     },
 
-    _getParameter(type, name, id) {
+    _getParameterFloat(type, name, id) {
 
         if (!this.isConnected)
             throw "Not connected";
@@ -293,23 +302,23 @@ const voicemeeter = {
             throw "Configuration error";
 
         if (!Object.values(InterfaceType).includes(type))
-            throw "Invalid trigger";
+            throw "Invalid type";
 
         const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
 
         if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
             throw `${interfaceType} ${id} not found`;
 
-        const parameterName = `${interfaceType}[${id}].${name};`;
+        const parameter = `${interfaceType}[${id}].${name}`;
 
-        const hardwareIdPtr = Buffer.alloc(parameterName.length + 1);
-        hardwareIdPtr.write(parameterName);
-        const namePtr = new FloatArray(1);
-        libvoicemeeter.VBVMR_GetParameterFloat(hardwareIdPtr, namePtr);
-        return namePtr[0];
+        const value = [0];
+        if (libvoicemeeter.VBVMR_GetParameterFloat(parameter, value) !== 0)
+            throw "Running failed";
+
+        return value[0];
     },
 
-    _setParameter(type, name, id, value) {
+    _getParameterString(type, name, id) {
 
         if (!this.isConnected)
             throw "Not connected";
@@ -318,14 +327,64 @@ const voicemeeter = {
             throw "Configuration error";
 
         if (!Object.values(InterfaceType).includes(type))
-            throw "Invalid trigger";
+            throw "Invalid type";
 
         const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
 
         if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
             throw `${interfaceType} ${id} not found`;
 
-        return this._sendRawParameterScript(`${interfaceType}[${id}].${name}=${value};`);
+        const parameter = `${interfaceType}[${id}].${name}`;
+
+        const value = Buffer.alloc(512);
+        if (libvoicemeeter.VBVMR_GetParameterStringA(parameter, value) !== 0)
+            throw "Running failed";
+
+        return value.toString().replace(/\x00+$/, "");
+    },
+
+    _setParameterFloat(type, name, id, value) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        if (!this.voicemeeterConfig)
+            throw "Configuration error";
+
+        if (!Object.values(InterfaceType).includes(type))
+            throw "Invalid type";
+
+        const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
+
+        if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
+            throw `${interfaceType} ${id} not found`;
+
+        const parameter = `${interfaceType}[${id}].${name}`;
+
+        if (libvoicemeeter.VBVMR_SetParameterFloat(parameter, value) !== 0)
+            throw "Running failed";
+    },
+
+    _setParameterString(type, name, id, value) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        if (!this.voicemeeterConfig)
+            throw "Configuration error";
+
+        if (!Object.values(InterfaceType).includes(type))
+            throw "Invalid type";
+
+        const interfaceType = type === InterfaceType.strip ? "Strip" : "Bus";
+
+        if (!this.voicemeeterConfig[type === InterfaceType.strip ? "strips" : "buses"].some((strip) => strip.id === id))
+            throw `${interfaceType} ${id} not found`;
+
+        const parameter = `${interfaceType}[${id}].${name}`;
+
+        if (libvoicemeeter.VBVMR_SetParameterStringA(parameter, value) !== 0)
+            throw "Running failed";
     },
 
     _setParameters(parameters) {
@@ -342,7 +401,7 @@ const voicemeeter = {
         const script = parameters.map((parameter) => {
 
             if (!Object.values(InterfaceType).includes(parameter.type))
-                throw "Invalid trigger";
+                throw "Invalid type";
 
             const interfaceType = parameter.type === InterfaceType.strip ? "Strip" : "Bus";
 
@@ -351,16 +410,14 @@ const voicemeeter = {
 
             return `${interfaceType}[${parameter.id}].${parameter.name}=${parameter.value};`;
 
-        }).join("\n");
+        }).join("");
 
-        return this._sendRawParameterScript(script);
+        this._sendRawParameterScript(script);
     },
 
-    _sendRawParameterScript(scriptString) {
-        const script = Buffer.alloc(scriptString.length + 1);
-        script.fill(0);
-        script.write(scriptString);
-        return libvoicemeeter.VBVMR_SetParameters(script);
+    _sendRawParameterScript(script) {
+        if (libvoicemeeter.VBVMR_SetParameters(script) !== 0)
+            throw "Running failed";
     }
 }
 
@@ -371,13 +428,13 @@ busesParametersNames.forEach((name) => {
 
     voicemeeter[`setBus${name}`] = (busNumber, value) => {
         if (typeof value === "boolean")
-            voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value ? 1 : 0);
+            voicemeeter._setParameterFloat(InterfaceType.bus, name, busNumber, value ? 1 : 0);
         else
-            voicemeeter._setParameter(InterfaceType.bus, name, busNumber, value);
+            voicemeeter._setParameterFloat(InterfaceType.bus, name, busNumber, value);
     }
 
     voicemeeter[`getBus${name}`] = (busNumber) => {
-        return voicemeeter._getParameter(InterfaceType.bus, name, busNumber);
+        return voicemeeter._getParameterFloat(InterfaceType.bus, name, busNumber);
     }
 });
 
@@ -385,13 +442,13 @@ stripParametersNames.forEach((name) => {
 
     voicemeeter[`setStrip${name}`] = (stripNumber, value) => {
         if (typeof value === "boolean")
-            voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value ? 1 : 0);
+            voicemeeter._setParameterFloat(InterfaceType.strip, name, stripNumber, value ? 1 : 0);
         else
-            voicemeeter._setParameter(InterfaceType.strip, name, stripNumber, value);
+            voicemeeter._setParameterFloat(InterfaceType.strip, name, stripNumber, value);
     }
 
     voicemeeter[`getStrip${name}`] = (stripNumber) => {
-        return voicemeeter._getParameter(InterfaceType.strip, name, stripNumber);
+        return voicemeeter._getParameterFloat(InterfaceType.strip, name, stripNumber);
     }
 });
 
