@@ -60,9 +60,7 @@ Fork the project make your change then do a pull request.
 
 #### Dependencies
 
-[`ffi-napi`][ffi-napi] => Read and execute the VoicemeeterRemote DLL
-
-[`ref-array-napi`][ref-array-napi] => Create array (*pointer) for `ffi-napi` to return string from the DLL
+[`koffi`][koffi] => Read and execute the VoicemeeterRemote DLL
 
 [`winreg`][winreg] => Read the windows registery to find Voicemeeter installation folder and the DLL
 
@@ -80,6 +78,5 @@ MIT
    [voicemeeter-banana]: <https://www.vb-audio.com/Voicemeeter/banana.htm>
    [voicemeeter-potato]: <https://www.vb-audio.com/Voicemeeter/potato.htm>
    [voicemeeter-api]: <https://github.com/Mikatux/voicemeeter-api>
-   [ffi-napi]: <https://www.npmjs.com/package/ffi-napi>
-   [ref-array-napi]: <https://www.npmjs.com/package/ref-array-napi>
+   [koffi]: <https://www.npmjs.com/package/koffi>
    [winreg]: <https://www.npmjs.com/package/winreg>
