@@ -272,8 +272,6 @@ const voicemeeter = {
                 return VoicemeeterType.voicemeeterBanana;
             case 3:
                 return VoicemeeterType.voicemeeterPotato;
-            case 6:
-                return VoicemeeterType.voicemeeterPotato64;
             default:
                 return VoicemeeterType.unknown;
         }
