@@ -102,56 +102,6 @@ const VoicemeeterDefaultConfig = { // key is VoicemeeterType
             id: 7,
             isVirtual: true
         }],
-    },
-    6: {
-        strips: [{
-            id: 0,
-            name: "Hardware input 1"
-        }, {
-            id: 1,
-            name: "Hardware input 2"
-        }, {
-            id: 2,
-            name: "Hardware input 3"
-        }, {
-            id: 3,
-            name: "Hardware input 4"
-        }, {
-            id: 4,
-            name: "Hardware input 5"
-        }, {
-            id: 5,
-            name: "Voicemeeter VAIO",
-            isVirtual: true
-        }, {
-            id: 6,
-            name: "Voicemeeter AUX",
-            isVirtual: true
-        }, {
-            id: 7,
-            name: "Voicemeeter VAIO 3",
-            isVirtual: true
-        }],
-        buses: [{
-            id: 0,
-        }, {
-            id: 1,
-        }, {
-            id: 2,
-        }, {
-            id: 3,
-        }, {
-            id: 4,
-        }, {
-            id: 5,
-            isVirtual: true
-        }, {
-            id: 6,
-            isVirtual: true
-        }, {
-            id: 7,
-            isVirtual: true
-        }],
     }
 }
 
@@ -159,8 +109,26 @@ const VoicemeeterType = {
     unknown: 0,
     voicemeeter: 1,
     voicemeeterBanana: 2,
-    voicemeeterPotato: 3,
-    voicemeeterPotato64: 6
+    voicemeeterPotato: 3
+}
+
+const RunVoicemeeterType = {
+    VoicemeeterStandard: 1,
+    VoicemeeterBanana: 2,
+    VoicemeeterPotato: 3,
+    VoicemeeterStandardx64: 4,
+    VoicemeeterBananax64: 5,
+    VoicemeeterPotatox64: 6,
+    VBDeviceCheck: 10,
+    VoicemeeterMacroButtons: 11,
+    VMStreamerView: 12,
+    VoicemeeterBUSMatrix8: 13,
+    VoicemeeterBUSGEQ15: 14,
+    VBAN2MIDI: 15,
+    VBCABLE_ControlPanel: 20,
+    VBVMAUX_ControlPanel: 21,
+    VBVMVAIO3_ControlPanel: 22,
+    VBVoicemeeterVAIO_ControlPanel: 23
 }
 
 const InterfaceType = {
@@ -204,4 +172,4 @@ const MacroButtonColor = {
     red: 8
 }
 
-module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, LevelType, DeviceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor };
+module.exports = { VoicemeeterDefaultConfig, VoicemeeterType, RunVoicemeeterType, InterfaceType, LevelType, DeviceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor };

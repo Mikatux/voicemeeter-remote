@@ -2,7 +2,7 @@ const { dirname, join } = require("path");
 const Registry = require("winreg");
 const koffi = require("koffi");
 
-const { VoicemeeterDefaultConfig, VoicemeeterType, InterfaceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterEnums");
+const { VoicemeeterDefaultConfig, VoicemeeterType, RunVoicemeeterType, InterfaceType, LevelType, DeviceType, MacroButtonState, MacroButtonTrigger, MacroButtonColor } = require("./voicemeeterEnums");
 
 const getDLLPath = () => {
     const regKey = new Registry({
@@ -80,8 +80,8 @@ const voicemeeter = {
         this.isInitialised = true;
     },
 
-    runVoicemeeter(voicemeeterType) {
-        if (libvoicemeeter.VBVMR_RunVoicemeeter(voicemeeterType) !== 0)
+    runVoicemeeter(runVoicemeeterType) {
+        if (libvoicemeeter.VBVMR_RunVoicemeeter(runVoicemeeterType) !== 0)
             throw "Running failed";
     },
 
@@ -454,7 +454,10 @@ stripParametersNames.forEach((name) => {
 
 module.exports = voicemeeter;
 module.exports.VoicemeeterType = VoicemeeterType;
+module.exports.RunVoicemeeterType = RunVoicemeeterType;
 module.exports.InterfaceType = InterfaceType;
+module.exports.LevelType = LevelType;
+module.exports.DeviceType = DeviceType;
 module.exports.MacroButtonState = MacroButtonState;
 module.exports.MacroButtonTrigger = MacroButtonTrigger;
 module.exports.MacroButtonColor = MacroButtonColor;
