@@ -90,18 +90,61 @@ const voicemeeter = {
     },
 
     /**
-     * @deprecated 
+     * @deprecated Use getRawParameterFloat 
      */
     getParameter(parameterName) {
+        return getRawParameterFloat(parameterName);
+    },
+
+    getRawParameterFloat(parameter) {
 
         if (!this.isConnected)
             throw "Not connected";
 
         const value = [0];
-        if (libvoicemeeter.VBVMR_GetParameterFloat(parameterName, value) !== 0)
+        if (libvoicemeeter.VBVMR_GetParameterFloat(parameter, value) !== 0)
             throw "Running failed";
 
         return value[0];
+    },
+
+    getRawParameterString(parameter) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        const value = Buffer.alloc(512);
+        if (libvoicemeeter.VBVMR_GetParameterStringA(parameter, value) !== 0)
+            throw "Running failed";
+
+        return value.toString().replace(/\x00+$/, "");
+    },
+
+    setRawParameterFloat(parameter, value) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        if (libvoicemeeter.VBVMR_SetParameterFloat(parameter, value) !== 0)
+            throw "Running failed";
+    },
+
+    setRawParameterString(parameter, value) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        if (libvoicemeeter.VBVMR_SetParameterStringA(parameter, value) !== 0)
+            throw "Running failed";
+    },
+
+    setRawParameters(parameters) {
+
+        if (!this.isConnected)
+            throw "Not connected";
+
+        if (libvoicemeeter.VBVMR_SetParameters(parameters) !== 0)
+            throw "Running failed";
     },
 
     login() {
@@ -184,53 +227,53 @@ const voicemeeter = {
     },
 
     showVoicemeeter() {
-        this._sendRawParameterScript("Command.Show=1;");
+        this.setRawParameters("Command.Show=1;");
     },
 
     shutdownVoicemeeter() {
-        this._sendRawParameterScript("Command.Shutdown=1;");
+        this.setRawParameters("Command.Shutdown=1;");
     },
 
     restartVoicemeeterAudioEngine() {
-        this._sendRawParameterScript("Command.Restart=1;");
+        this.setRawParameters("Command.Restart=1;");
     },
 
     ejectVoicemeeterCassette() {
-        this._sendRawParameterScript("Command.Eject=1;");
+        this.setRawParameters("Command.Eject=1;");
     },
 
     resetVoicemeeterConfiguration() {
-        this._sendRawParameterScript("Command.Reset=1;");
+        this.setRawParameters("Command.Reset=1;");
     },
 
     saveVoicemeeterConfiguration(filename) {
-        this._sendRawParameterScript("Command.Save=" + filename + ";");
+        this.setRawParameters("Command.Save=" + filename + ";");
     },
 
     loadVoicemeeterConfiguration(filename) {
-        this._sendRawParameterScript("Command.Load=" + filename + ";");
+        this.setRawParameters("Command.Load=" + filename + ";");
     },
 
     lockVoicemeeterGui(lock) {
-        this._sendRawParameterScript("Command.Lock=" + (lock ? 1 : 0) + ";");
+        this.setRawParameters("Command.Lock=" + (lock ? 1 : 0) + ";");
     },
 
     setMacroButtonState(button, state) {
         if (!Object.values(MacroButtonState).includes(state))
             throw "Invalid state";
-        this._sendRawParameterScript("Command.Button[" + button + "].State=" + state + ";");
+        this.setRawParameters("Command.Button[" + button + "].State=" + state + ";");
     },
 
     setMacroButtonStateOnly(button, state) {
         if (!Object.values(MacroButtonState).includes(state))
             throw "Invalid state";
-        this._sendRawParameterScript("Command.Button[" + button + "].StateOnly=" + state + ";");
+        this.setRawParameters("Command.Button[" + button + "].StateOnly=" + state + ";");
     },
 
     setMacroButtonTrigger(button, trigger) {
         if (!Object.values(MacroButtonTrigger).includes(trigger))
             throw "Invalid trigger";
-        this._sendRawParameterScript("Command.Button[" + button + "].Trigger=" + trigger + ";");
+        this.setRawParameters("Command.Button[" + button + "].Trigger=" + trigger + ";");
     },
 
     /**
@@ -239,11 +282,11 @@ const voicemeeter = {
     setMacroButtonColor(button, color) {
         if (!Object.values(MacroButtonColor).includes(color))
             throw "Invalid color";
-        this._sendRawParameterScript("Command.Button[" + button + "].Color=" + color + ";");
+        this.setRawParameters("Command.Button[" + button + "].Color=" + color + ";");
     },
 
     showVbanChatDialog() {
-        this._sendRawParameterScript("Command.DialogShow.VBANCHAT=1;");
+        this.setRawParameters("Command.DialogShow.VBANCHAT=1;");
     },
 
     getLevel(type, channel) {
@@ -252,7 +295,6 @@ const voicemeeter = {
             throw "Not connected";
 
         const value = [0];
-
         if (libvoicemeeter.VBVMR_GetLevel(type, channel, value) !== 0)
             throw "Running failed";
 
@@ -309,11 +351,7 @@ const voicemeeter = {
 
         const parameter = `${interfaceType}[${id}].${name}`;
 
-        const value = [0];
-        if (libvoicemeeter.VBVMR_GetParameterFloat(parameter, value) !== 0)
-            throw "Running failed";
-
-        return value[0];
+        return this.getRawParameterFloat(parameter);
     },
 
     _getParameterString(type, name, id) {
@@ -334,11 +372,7 @@ const voicemeeter = {
 
         const parameter = `${interfaceType}[${id}].${name}`;
 
-        const value = Buffer.alloc(512);
-        if (libvoicemeeter.VBVMR_GetParameterStringA(parameter, value) !== 0)
-            throw "Running failed";
-
-        return value.toString().replace(/\x00+$/, "");
+        return this.getRawParameterString(parameter);
     },
 
     _setParameterFloat(type, name, id, value) {
@@ -359,8 +393,7 @@ const voicemeeter = {
 
         const parameter = `${interfaceType}[${id}].${name}`;
 
-        if (libvoicemeeter.VBVMR_SetParameterFloat(parameter, value) !== 0)
-            throw "Running failed";
+        this.setRawParameterFloat(parameter, value);
     },
 
     _setParameterString(type, name, id, value) {
@@ -381,8 +414,7 @@ const voicemeeter = {
 
         const parameter = `${interfaceType}[${id}].${name}`;
 
-        if (libvoicemeeter.VBVMR_SetParameterStringA(parameter, value) !== 0)
-            throw "Running failed";
+        this.setRawParameterString(parameter, value);
     },
 
     _setParameters(parameters) {
@@ -410,12 +442,14 @@ const voicemeeter = {
 
         }).join("");
 
-        this._sendRawParameterScript(script);
+        this.setRawParameters(script);
     },
 
+    /**
+     * @deprecated Use setRawParameters 
+     */
     _sendRawParameterScript(script) {
-        if (libvoicemeeter.VBVMR_SetParameters(script) !== 0)
-            throw "Running failed";
+        this.setRawParameters(script);
     }
 }
 
